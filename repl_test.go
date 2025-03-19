@@ -17,6 +17,18 @@ func TestCleanInput(t *testing.T) {
 			input:    "hello there world  ",
 			expected: []string{"hello", "there", "world"},
 		},
+		{
+			input:    "  ",
+			expected: []string{},
+		},
+		{
+			input:    "  hello  ",
+			expected: []string{"hello"},
+		},
+		{
+			input:    "  HellO  World  ",
+			expected: []string{"hello", "world"},
+		},
 	}
 
 	for _, c := range cases {
@@ -25,7 +37,7 @@ func TestCleanInput(t *testing.T) {
 		// if they don't match, use t.Errorf to print an error message
 		// and fail the test
 		if len(actual) != len(c.expected) {
-			t.Errorf("actual length %v is not the same as expected length %v", len(actual), len(c.expected))
+			t.Errorf("lengths don't match: '%v' vs '%v'", actual, c.expected)
 		}
 		for i := range actual {
 			word := actual[i]
@@ -34,7 +46,7 @@ func TestCleanInput(t *testing.T) {
 			// if they don't match, use t.Errorf to print an error message
 			// and fail the test
 			if word != expectedWord {
-				t.Errorf("word %v doesn't match expectedWord %v", word, expectedWord)
+				t.Errorf("cleanInput(%v) == %v, expected %v", c.input, actual, c.expected)
 			}
 
 		}
