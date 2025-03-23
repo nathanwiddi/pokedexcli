@@ -1,47 +1,20 @@
 package pokeapi
 
 import (
-	"encoding/json"
-	"fmt"
-	"io"
 	"net/http"
+	"time"
 )
 
-type LocationArea struct {
-	Count    int    `json:"count"`
-	Next     string `json:"next"`
-	Previous any    `json:"previous"`
-	Results  []struct {
-		Name string `json:"name"`
-		URL  string `json:"url"`
-	} `json:"results"`
+// Client -
+type Client struct {
+	httpClient http.Client
 }
 
-func GetLocationArea(url string) (LocationArea, error) {
-	if url == "" {
-		url = "https://pokeapi.co/api/v2/location-area/"
+// NewClient -
+func NewClient(timeout time.Duration) Client {
+	return Client{
+		httpClient: http.Client{
+			Timeout: timeout,
+		},
 	}
-
-	res, err := http.Get(url)
-	if err != nil {
-		return LocationArea{}, err
-	}
-	defer res.Body.Close()
-
-	body, err := io.ReadAll(res.Body)
-	if err != nil {
-		return LocationArea{}, err
-	}
-
-	if res.StatusCode > 299 {
-		return LocationArea{}, fmt.Errorf("response failed with status code: %d and body: %s", res.StatusCode, body)
-	}
-
-	var locationArea LocationArea
-	err = json.Unmarshal(body, &locationArea)
-	if err != nil {
-		return LocationArea{}, err
-	}
-
-	return locationArea, nil
 }

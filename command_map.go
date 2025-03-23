@@ -1,37 +1,40 @@
 package main
 
 import (
+	"errors"
 	"fmt"
-
-	"github.com/nathanwiddi/pokedexcli/internal/pokeapi"
 )
 
-func commandMap(cfg *Config) error {
-	url := ""
-	if cfg.Next != "" {
-		url = cfg.Next
-	}
-
-	locArea, err := pokeapi.GetLocationArea(url)
+func commandMapf(cfg *config) error {
+	locationsResp, err := cfg.pokeapiClient.ListLocations(cfg.nextLocationsURL)
 	if err != nil {
 		return err
 	}
 
-	for _, loc := range locArea.Results {
+	cfg.nextLocationsURL = locationsResp.Next
+	cfg.prevLocationsURL = locationsResp.Previous
+
+	for _, loc := range locationsResp.Results {
 		fmt.Println(loc.Name)
 	}
+	return nil
+}
 
-	// Update the config with the new pagination URLs
-	cfg.Next = locArea.Next
-
-	// Handle the case when Previous is null
-	if locArea.Previous != nil {
-		if prev, ok := locArea.Previous.(string); ok {
-			cfg.Previous = prev
-		}
-	} else {
-		cfg.Previous = ""
+func commandMapb(cfg *config) error {
+	if cfg.prevLocationsURL == nil {
+		return errors.New("you're on the first page")
 	}
 
+	locationResp, err := cfg.pokeapiClient.ListLocations(cfg.prevLocationsURL)
+	if err != nil {
+		return err
+	}
+
+	cfg.nextLocationsURL = locationResp.Next
+	cfg.prevLocationsURL = locationResp.Previous
+
+	for _, loc := range locationResp.Results {
+		fmt.Println(loc.Name)
+	}
 	return nil
 }
